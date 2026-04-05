@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Night Owl Reader</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #11131a;
+        --card: #1b1f2a;
+        --text: #f2f4f8;
+        --muted: #9aa4b5;
+        --accent: #6ea8fe;
+      }
+
+      body {
+        width: 320px;
+        margin: 0;
+        font-family: Inter, Segoe UI, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .wrap {
+        padding: 16px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      button {
+        width: 100%;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 600;
+        cursor: pointer;
+        color: #06152e;
+        background: linear-gradient(180deg, #8ec5ff, var(--accent));
+      }
+
+      button:hover {
+        filter: brightness(1.05);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Night Owl PDF & PPT Reader</h1>
+        <p>Open the reader, then drag/drop or pick a PDF, PPTX, or PPT file.</p>
+        <button id="openReader">Open Reader</button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
