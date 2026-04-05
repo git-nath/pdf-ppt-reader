@@ -6,38 +6,61 @@
     <title>Night Owl Reader</title>
     <link rel="stylesheet" href="viewer.css" />
   </head>
-  <body data-theme="midnight">
-    <header class="topbar glass">
-      <div class="brand">🌙 Night Owl Reader</div>
-      <div class="actions">
-        <label for="fileInput" class="btn btn-primary">Choose file</label>
+  <body data-theme="graphite">
+    <div class="bg-blur"></div>
+
+    <header class="app-shell">
+      <div class="brand-wrap">
+        <div class="logo">🌙</div>
+        <div>
+          <h1>Night Owl Reader</h1>
+          <p>PDF + PowerPoint reader with premium dark themes</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <label for="fileInput" class="btn primary">Open file</label>
         <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
-        <select id="themeSelect" class="theme-select" aria-label="Dark theme style">
-          <option value="midnight">Midnight</option>
-          <option value="amoled">AMOLED</option>
-          <option value="nord">Nord</option>
-          <option value="sepia">Sepia Night</option>
+        <select id="themeSelect" class="input" aria-label="Theme">
+          <option value="graphite">Graphite</option>
+          <option value="obsidian">Obsidian</option>
+          <option value="nordic">Nordic</option>
+          <option value="mocha">Mocha</option>
         </select>
       </div>
     </header>
 
-    <main class="container">
-      <section id="welcome" class="welcome glass">
-        <h1>Read PDFs & PowerPoints in style</h1>
+    <main class="layout">
+      <section id="welcome" class="panel welcome">
+        <h2>Drop a file and start reading</h2>
         <p>
-          Drop a file anywhere, or click <strong>Choose file</strong>. Use the theme menu to switch between different
-          night-view styles.
+          No popups-inside-popups. PDFs render directly in this interface, and PPTX slides are extracted into a clean,
+          readable outline.
         </p>
-        <div class="chips">
-          <span>PDF native preview</span>
+        <div class="feature-list">
+          <span>Native canvas PDF</span>
           <span>PPTX text extraction</span>
-          <span>Modern dark themes</span>
+          <span>4 dark themes</span>
         </div>
       </section>
 
-      <section id="status" class="status hidden"></section>
-      <section id="pdfView" class="hidden"></section>
-      <section id="pptView" class="hidden"></section>
+      <section id="status" class="panel status hidden"></section>
+
+      <section id="pdfWorkspace" class="hidden">
+        <div class="panel toolbar">
+          <div class="left-tools">
+            <button id="zoomOut" class="btn ghost" title="Zoom out">−</button>
+            <button id="zoomIn" class="btn ghost" title="Zoom in">+</button>
+            <button id="fitWidth" class="btn ghost" title="Fit width">Fit</button>
+            <span id="zoomLabel" class="pill">100%</span>
+          </div>
+          <div class="right-tools">
+            <span class="pill" id="pageInfo">0 pages</span>
+          </div>
+        </div>
+        <div id="pdfPages" class="pdf-pages"></div>
+      </section>
+
+      <section id="pptWorkspace" class="hidden"></section>
     </main>
 
     <script type="module" src="viewer.js"></script>
