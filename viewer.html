@@ -5,28 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Night Owl Reader</title>
     <link rel="stylesheet" href="viewer.css" />
-    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </head>
-  <body class="dark">
-    <header class="topbar">
+  <body data-theme="midnight">
+    <header class="topbar glass">
       <div class="brand">🌙 Night Owl Reader</div>
-      <div class="controls">
-        <label for="fileInput" class="button">Choose file</label>
+      <div class="actions">
+        <label for="fileInput" class="btn btn-primary">Choose file</label>
         <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
-        <button id="themeToggle" class="button secondary" title="Toggle night mode">Night Mode: On</button>
+        <select id="themeSelect" class="theme-select" aria-label="Dark theme style">
+          <option value="midnight">Midnight</option>
+          <option value="amoled">AMOLED</option>
+          <option value="nord">Nord</option>
+          <option value="sepia">Sepia Night</option>
+        </select>
       </div>
     </header>
 
-    <main>
-      <section id="emptyState" class="state">
-        <h1>PDF + PPT Reader</h1>
-        <p>Drop a file here or click <strong>Choose file</strong>.</p>
+    <main class="container">
+      <section id="welcome" class="welcome glass">
+        <h1>Read PDFs & PowerPoints in style</h1>
+        <p>
+          Drop a file anywhere, or click <strong>Choose file</strong>. Use the theme menu to switch between different
+          night-view styles.
+        </p>
+        <div class="chips">
+          <span>PDF native preview</span>
+          <span>PPTX text extraction</span>
+          <span>Modern dark themes</span>
+        </div>
       </section>
 
-      <section id="info" class="info hidden"></section>
-      <section id="pdfContainer" class="hidden"></section>
-      <section id="pptContainer" class="hidden"></section>
+      <section id="status" class="status hidden"></section>
+      <section id="pdfView" class="hidden"></section>
+      <section id="pptView" class="hidden"></section>
     </main>
 
     <script type="module" src="viewer.js"></script>

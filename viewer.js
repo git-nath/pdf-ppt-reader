@@ -1,159 +1,157 @@
-const fileInput = document.getElementById('fileInput');
-const emptyState = document.getElementById('emptyState');
-const info = document.getElementById('info');
-const pdfContainer = document.getElementById('pdfContainer');
-const pptContainer = document.getElementById('pptContainer');
-const themeToggle = document.getElementById('themeToggle');
+import { unzipSync, strFromU8 } from './vendor/fflate.js';
 
-const showInfo = (msg) => {
-  info.textContent = msg;
-  info.classList.remove('hidden');
+const fileInput = document.getElementById('fileInput');
+const themeSelect = document.getElementById('themeSelect');
+const welcome = document.getElementById('welcome');
+const status = document.getElementById('status');
+const pdfView = document.getElementById('pdfView');
+const pptView = document.getElementById('pptView');
+
+const renderStatus = (message, type = 'info') => {
+  status.textContent = message;
+  status.classList.remove('hidden');
+  status.style.borderColor = type === 'error' ? '#f97373aa' : '';
 };
 
 const resetView = () => {
-  pdfContainer.classList.add('hidden');
-  pptContainer.classList.add('hidden');
-  pdfContainer.innerHTML = '';
-  pptContainer.innerHTML = '';
-  info.classList.add('hidden');
-  emptyState.classList.add('hidden');
+  pdfView.classList.add('hidden');
+  pptView.classList.add('hidden');
+  pptView.innerHTML = '';
+  pdfView.innerHTML = '';
+  status.classList.add('hidden');
+  welcome.classList.remove('hidden');
 };
 
-themeToggle.addEventListener('click', () => {
-  const dark = document.body.classList.toggle('dark');
-  document.body.classList.toggle('light', !dark);
-  themeToggle.textContent = `Night Mode: ${dark ? 'On' : 'Off'}`;
+const clearStatusStyle = () => {
+  status.style.borderColor = '';
+};
+
+themeSelect.addEventListener('change', () => {
+  document.body.dataset.theme = themeSelect.value;
+  localStorage.setItem('night-owl-theme', themeSelect.value);
 });
+
+const savedTheme = localStorage.getItem('night-owl-theme');
+if (savedTheme) {
+  document.body.dataset.theme = savedTheme;
+  themeSelect.value = savedTheme;
+}
+
+const handleFile = async (file) => {
+  resetView();
+  clearStatusStyle();
+  const name = file.name.toLowerCase();
+
+  try {
+    if (name.endsWith('.pdf')) {
+      await renderPdf(file);
+      return;
+    }
+
+    if (name.endsWith('.pptx')) {
+      await renderPptx(file);
+      return;
+    }
+
+    if (name.endsWith('.ppt')) {
+      renderStatus('Legacy .ppt format is not browser-readable. Please convert to .pptx for full preview.', 'error');
+      return;
+    }
+
+    renderStatus('Unsupported file type. Choose .pdf, .pptx, or .ppt.', 'error');
+  } catch (error) {
+    renderStatus(`Failed to read file: ${error.message}`, 'error');
+  }
+};
 
 fileInput.addEventListener('change', async (event) => {
   const [file] = event.target.files;
-  if (file) {
-    await renderFile(file);
-  }
+  if (file) await handleFile(file);
 });
 
-document.addEventListener('dragover', (event) => {
-  event.preventDefault();
-});
+document.addEventListener('dragover', (event) => event.preventDefault());
 
 document.addEventListener('drop', async (event) => {
   event.preventDefault();
   const [file] = event.dataTransfer.files;
-  if (file) {
-    await renderFile(file);
-  }
+  if (file) await handleFile(file);
 });
 
-const renderFile = async (file) => {
-  resetView();
-  const name = file.name.toLowerCase();
-
-  if (name.endsWith('.pdf')) {
-    await renderPdf(file);
-    return;
-  }
-
-  if (name.endsWith('.pptx')) {
-    await renderPptx(file);
-    return;
-  }
-
-  if (name.endsWith('.ppt')) {
-    showInfo('Legacy .ppt files are not directly parseable in-browser. Please convert to .pptx for full reading.');
-    return;
-  }
-
-  emptyState.classList.remove('hidden');
-  showInfo('Unsupported file type. Please use .pdf, .pptx, or .ppt.');
-};
-
 const renderPdf = async (file) => {
-  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+  const objectUrl = URL.createObjectURL(file);
+  const frame = document.createElement('iframe');
+  frame.src = objectUrl;
+  frame.title = file.name;
 
-  const data = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
-  showInfo(`PDF loaded: ${file.name} • ${pdf.numPages} pages`);
+  pdfView.append(frame);
+  pdfView.classList.remove('hidden');
+  welcome.classList.add('hidden');
+  renderStatus(`PDF loaded: ${file.name}`);
 
-  pdfContainer.classList.remove('hidden');
-
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const viewport = page.getViewport({ scale: 1.25 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
-    const context = canvas.getContext('2d', { alpha: false });
-    await page.render({ canvasContext: context, viewport }).promise;
-
-    const pageWrap = document.createElement('div');
-    pageWrap.className = 'pdf-page';
-    pageWrap.append(canvas);
-    pdfContainer.append(pageWrap);
-  }
+  frame.addEventListener('load', () => {
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  });
 };
 
-const extractSlideTexts = async (zip) => {
-  const slideEntries = Object.keys(zip.files)
-    .filter((path) => /^ppt\/slides\/slide\d+\.xml$/.test(path))
+const parsePptxSlides = (arrayBuffer) => {
+  const zip = unzipSync(new Uint8Array(arrayBuffer));
+
+  const slidePaths = Object.keys(zip)
+    .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
     .sort((a, b) => {
-      const aNum = Number(a.match(/slide(\d+)\.xml$/)[1]);
-      const bNum = Number(b.match(/slide(\d+)\.xml$/)[1]);
-      return aNum - bNum;
+      const aNumber = Number(a.match(/slide(\d+)\.xml$/)?.[1] || 0);
+      const bNumber = Number(b.match(/slide(\d+)\.xml$/)?.[1] || 0);
+      return aNumber - bNumber;
     });
 
-  const slides = [];
-  for (const entry of slideEntries) {
-    const xml = await zip.files[entry].async('text');
+  return slidePaths.map((slidePath) => {
+    const xml = strFromU8(zip[slidePath]);
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'application/xml');
-    const texts = [...doc.getElementsByTagName('a:t')]
+    const documentNode = parser.parseFromString(xml, 'application/xml');
+
+    return [...documentNode.getElementsByTagName('a:t')]
       .map((node) => node.textContent?.trim())
       .filter(Boolean);
-    slides.push(texts);
-  }
-
-  return slides;
+  });
 };
 
 const renderPptx = async (file) => {
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
-  const slides = await extractSlideTexts(zip);
+  const slides = parsePptxSlides(await file.arrayBuffer());
+  pptView.classList.remove('hidden');
+  welcome.classList.add('hidden');
 
-  showInfo(`PPTX loaded: ${file.name} • ${slides.length} slides`);
-  pptContainer.classList.remove('hidden');
+  renderStatus(`PPTX loaded: ${file.name} • ${slides.length} slides`);
 
   if (!slides.length) {
-    const block = document.createElement('div');
-    block.className = 'slide';
-    block.textContent = 'No readable text found in slides.';
-    pptContainer.append(block);
+    const empty = document.createElement('article');
+    empty.className = 'slide';
+    empty.textContent = 'No text content found in this PPTX file.';
+    pptView.append(empty);
     return;
   }
 
-  slides.forEach((slideTexts, index) => {
-    const block = document.createElement('article');
-    block.className = 'slide';
+  slides.forEach((texts, index) => {
+    const card = document.createElement('article');
+    card.className = 'slide';
 
     const title = document.createElement('h3');
     title.textContent = `Slide ${index + 1}`;
-    block.append(title);
+    card.append(title);
 
-    if (!slideTexts.length) {
-      const empty = document.createElement('p');
-      empty.textContent = '(No text content found on this slide)';
-      block.append(empty);
+    if (!texts.length) {
+      const p = document.createElement('p');
+      p.textContent = '(No text found on this slide)';
+      card.append(p);
     } else {
       const list = document.createElement('ul');
-      for (const text of slideTexts) {
+      texts.forEach((text) => {
         const item = document.createElement('li');
         item.textContent = text;
         list.append(item);
-      }
-      block.append(list);
+      });
+      card.append(list);
     }
 
-    pptContainer.append(block);
+    pptView.append(card);
   });
 };
