@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Night Owl Reader</title>
+    <link rel="stylesheet" href="viewer.css" />
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  </head>
+  <body class="dark">
+    <header class="topbar">
+      <div class="brand">🌙 Night Owl Reader</div>
+      <div class="controls">
+        <label for="fileInput" class="button">Choose file</label>
+        <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
+        <button id="themeToggle" class="button secondary" title="Toggle night mode">Night Mode: On</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="emptyState" class="state">
+        <h1>PDF + PPT Reader</h1>
+        <p>Drop a file here or click <strong>Choose file</strong>.</p>
+      </section>
+
+      <section id="info" class="info hidden"></section>
+      <section id="pdfContainer" class="hidden"></section>
+      <section id="pptContainer" class="hidden"></section>
+    </main>
+
+    <script type="module" src="viewer.js"></script>
+  </body>
+</html>
