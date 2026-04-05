@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Night Owl PDF & PPT Reader",
+  "description": "Read PDF and PPT files with a focused dark night-view mode.",
+  "version": "1.0.0",
+  "action": {
+    "default_title": "Open Reader",
+    "default_popup": "popup.html"
+  }
+}

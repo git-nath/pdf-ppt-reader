@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Night Owl Reader</title>
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body data-theme="midnight">
+    <header class="topbar glass">
+      <div class="brand">🌙 Night Owl Reader</div>
+      <div class="actions">
+        <label for="fileInput" class="btn btn-primary">Choose file</label>
+        <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
+        <select id="themeSelect" class="theme-select" aria-label="Dark theme style">
+          <option value="midnight">Midnight</option>
+          <option value="amoled">AMOLED</option>
+          <option value="nord">Nord</option>
+          <option value="sepia">Sepia Night</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="welcome" class="welcome glass">
+        <h1>Read PDFs & PowerPoints in style</h1>
+        <p>
+          Drop a file anywhere, or click <strong>Choose file</strong>. Use the theme menu to switch between different
+          night-view styles.
+        </p>
+        <div class="chips">
+          <span>PDF native preview</span>
+          <span>PPTX text extraction</span>
+          <span>Modern dark themes</span>
+        </div>
+      </section>
+
+      <section id="status" class="status hidden"></section>
+      <section id="pdfView" class="hidden"></section>
+      <section id="pptView" class="hidden"></section>
+    </main>
+
+    <script type="module" src="viewer.js"></script>
+  </body>
+</html>
