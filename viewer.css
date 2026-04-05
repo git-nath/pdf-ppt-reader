@@ -8,7 +8,7 @@
   --accent: #78a8ff;
   --border: rgba(120, 168, 255, 0.2);
   --shadow: 0 25px 60px rgba(2, 8, 24, 0.45);
-  --pdf-filter: invert(0.92) hue-rotate(180deg) saturate(0.85) contrast(0.92);
+  --pdf-filter: brightness(0.88) contrast(1.06) saturate(0.92);
 }
 
 body[data-theme='obsidian'] {
@@ -21,7 +21,7 @@ body[data-theme='obsidian'] {
   --accent: #5cc8ff;
   --border: rgba(92, 200, 255, 0.24);
   --shadow: 0 25px 60px rgba(0, 0, 0, 0.58);
-  --pdf-filter: invert(0.98) hue-rotate(180deg) saturate(0.9);
+  --pdf-filter: brightness(0.86) contrast(1.06) saturate(0.92);
 }
 
 body[data-theme='nordic'] {
@@ -34,7 +34,7 @@ body[data-theme='nordic'] {
   --accent: #97bddc;
   --border: rgba(151, 189, 220, 0.25);
   --shadow: 0 25px 60px rgba(7, 12, 24, 0.42);
-  --pdf-filter: invert(0.9) hue-rotate(184deg) saturate(0.78) contrast(0.9);
+  --pdf-filter: brightness(0.9) contrast(1.04) saturate(0.88);
 }
 
 body[data-theme='mocha'] {
@@ -47,7 +47,7 @@ body[data-theme='mocha'] {
   --accent: #d4a066;
   --border: rgba(212, 160, 102, 0.28);
   --shadow: 0 25px 60px rgba(8, 4, 2, 0.5);
-  --pdf-filter: sepia(0.4) saturate(0.9) brightness(0.88) contrast(0.94);
+  --pdf-filter: sepia(0.22) saturate(0.85) brightness(0.9) contrast(1.03);
 }
 
 * { box-sizing: border-box; }
@@ -185,7 +185,7 @@ body {
 
 .pdf-page {
   border-radius: 16px;
-  background: #fff;
+  background: var(--panel-solid);
   padding: 14px;
   overflow: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
@@ -197,6 +197,9 @@ body {
   display: block;
   margin: 0 auto;
   filter: var(--pdf-filter);
+  border-radius: 8px;
+  image-rendering: auto;
+  backface-visibility: hidden;
 }
 
 .slide {

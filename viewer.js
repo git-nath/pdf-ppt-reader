@@ -17,7 +17,7 @@ const zoomOut = document.getElementById('zoomOut');
 const fitWidth = document.getElementById('fitWidth');
 
 let currentPdf = null;
-let scale = 1.2;
+let scale = 1.15;
 
 const setStatus = (message, type = 'info') => {
   status.textContent = message;
@@ -56,17 +56,25 @@ const renderPdfPages = async () => {
 
   pdfPages.innerHTML = '';
   pageInfo.textContent = `${currentPdf.numPages} pages`;
+  const pixelRatio = Math.max(window.devicePixelRatio || 1, 1.25);
 
   for (let pageNumber = 1; pageNumber <= currentPdf.numPages; pageNumber += 1) {
     const page = await currentPdf.getPage(pageNumber);
     const viewport = page.getViewport({ scale });
 
     const canvas = document.createElement('canvas');
-    canvas.width = Math.floor(viewport.width);
-    canvas.height = Math.floor(viewport.height);
+    canvas.width = Math.floor(viewport.width * pixelRatio);
+    canvas.height = Math.floor(viewport.height * pixelRatio);
+    canvas.style.width = `${Math.floor(viewport.width)}px`;
+    canvas.style.height = `${Math.floor(viewport.height)}px`;
+    canvas.style.transform = 'translateZ(0)';
 
     const ctx = canvas.getContext('2d', { alpha: false });
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    await page.render({
+      canvasContext: ctx,
+      viewport,
+      transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+    }).promise;
 
     const wrapper = document.createElement('article');
     wrapper.className = 'pdf-page';
@@ -159,7 +167,7 @@ const renderPptx = async (file) => {
 
 const renderPdf = async (file) => {
   currentPdf = null;
-  scale = 1.2;
+  scale = 1.15;
 
   const bytes = await file.arrayBuffer();
   const doc = await pdfjsLib.getDocument({ data: bytes }).promise;
