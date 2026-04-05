@@ -1,0 +1,123 @@
+:root {
+  --bg: #0f1117;
+  --surface: #161b25;
+  --text: #edf2f8;
+  --muted: #a9b3c2;
+  --accent: #7fb4ff;
+  --border: rgba(255, 255, 255, 0.12);
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#fileInput {
+  display: none;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  background: linear-gradient(180deg, #8ec5ff, var(--accent));
+  color: #081225;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.secondary {
+  color: var(--text);
+  background: #222938;
+}
+
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.state {
+  margin-top: 15vh;
+  text-align: center;
+  color: var(--muted);
+}
+
+.info {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #1c2433;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+#pdfContainer {
+  display: grid;
+  gap: 20px;
+}
+
+.pdf-page {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 3px 24px rgba(0, 0, 0, 0.25);
+  overflow: auto;
+}
+
+.slide {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #171f2d;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.slide h3 {
+  margin-top: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+body.dark .pdf-page canvas {
+  filter: invert(92%) hue-rotate(180deg) saturate(0.85) contrast(0.92);
+}
+
+body.light {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #475569;
+  --accent: #2563eb;
+  --border: rgba(15, 23, 42, 0.16);
+}
