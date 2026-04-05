@@ -4,34 +4,45 @@ import * as pdfjsLib from './vendor/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdf.worker.min.mjs';
 
 const fileInput = document.getElementById('fileInput');
+const fileName = document.getElementById('fileName');
 const themeSelect = document.getElementById('themeSelect');
 const welcome = document.getElementById('welcome');
 const status = document.getElementById('status');
-const pdfWorkspace = document.getElementById('pdfWorkspace');
+const pdfReader = document.getElementById('pdfReader');
 const pptWorkspace = document.getElementById('pptWorkspace');
-const pdfPages = document.getElementById('pdfPages');
-const zoomLabel = document.getElementById('zoomLabel');
-const pageInfo = document.getElementById('pageInfo');
+
+const thumbPane = document.getElementById('thumbPane');
+const pageCanvas = document.getElementById('pageCanvas');
+const pageNumber = document.getElementById('pageNumber');
+const pageCount = document.getElementById('pageCount');
+const prevPage = document.getElementById('prevPage');
+const nextPage = document.getElementById('nextPage');
 const zoomIn = document.getElementById('zoomIn');
 const zoomOut = document.getElementById('zoomOut');
-const fitWidth = document.getElementById('fitWidth');
+const zoomSelect = document.getElementById('zoomSelect');
+const toggleSidebar = document.getElementById('toggleSidebar');
 
 let currentPdf = null;
-let scale = 1.15;
+let currentPage = 1;
+let currentScale = 1;
 
 const setStatus = (message, type = 'info') => {
   status.textContent = message;
   status.classList.remove('hidden');
-  status.style.borderColor = type === 'error' ? '#f97373aa' : '';
+  status.style.borderColor = type === 'error' ? '#ef4444' : '';
 };
 
-const resetView = () => {
-  pdfWorkspace.classList.add('hidden');
-  pptWorkspace.classList.add('hidden');
-  pdfPages.innerHTML = '';
-  pptWorkspace.innerHTML = '';
+const clearStatus = () => {
   status.classList.add('hidden');
+  status.style.borderColor = '';
+};
+
+const resetWorkspaces = () => {
+  pdfReader.classList.add('hidden');
+  pptWorkspace.classList.add('hidden');
+  pptWorkspace.innerHTML = '';
   welcome.classList.remove('hidden');
+  clearStatus();
 };
 
 const applyTheme = (theme) => {
@@ -40,169 +51,156 @@ const applyTheme = (theme) => {
 };
 
 themeSelect.addEventListener('change', () => applyTheme(themeSelect.value));
-
 const savedTheme = localStorage.getItem('night-owl-theme');
 if (savedTheme) {
   themeSelect.value = savedTheme;
   applyTheme(savedTheme);
 }
 
-const updateZoomLabel = () => {
-  zoomLabel.textContent = `${Math.round(scale * 100)}%`;
-};
-
-const renderPdfPages = async () => {
+const renderPage = async () => {
   if (!currentPdf) return;
 
-  pdfPages.innerHTML = '';
-  pageInfo.textContent = `${currentPdf.numPages} pages`;
-  const pixelRatio = Math.max(window.devicePixelRatio || 1, 1.25);
+  const page = await currentPdf.getPage(currentPage);
+  const viewport = page.getViewport({ scale: currentScale });
+  const ratio = Math.max(window.devicePixelRatio || 1, 1.25);
 
-  for (let pageNumber = 1; pageNumber <= currentPdf.numPages; pageNumber += 1) {
-    const page = await currentPdf.getPage(pageNumber);
-    const viewport = page.getViewport({ scale });
+  pageCanvas.width = Math.floor(viewport.width * ratio);
+  pageCanvas.height = Math.floor(viewport.height * ratio);
+  pageCanvas.style.width = `${Math.floor(viewport.width)}px`;
+  pageCanvas.style.height = `${Math.floor(viewport.height)}px`;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.floor(viewport.width * pixelRatio);
-    canvas.height = Math.floor(viewport.height * pixelRatio);
-    canvas.style.width = `${Math.floor(viewport.width)}px`;
-    canvas.style.height = `${Math.floor(viewport.height)}px`;
-    canvas.style.transform = 'translateZ(0)';
+  const ctx = pageCanvas.getContext('2d', { alpha: false });
+  await page.render({
+    canvasContext: ctx,
+    viewport,
+    transform: [ratio, 0, 0, ratio, 0, 0],
+  }).promise;
 
-    const ctx = canvas.getContext('2d', { alpha: false });
-    await page.render({
-      canvasContext: ctx,
-      viewport,
-      transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
-    }).promise;
+  pageNumber.value = String(currentPage);
+};
 
-    const wrapper = document.createElement('article');
-    wrapper.className = 'pdf-page';
-    wrapper.append(canvas);
-    pdfPages.append(wrapper);
+const setPage = async (page) => {
+  if (!currentPdf) return;
+  currentPage = Math.max(1, Math.min(page, currentPdf.numPages));
+  await renderPage();
+  updateActiveThumb();
+};
+
+const updateActiveThumb = () => {
+  [...thumbPane.querySelectorAll('.thumb-item')].forEach((el) => {
+    el.classList.toggle('active', Number(el.dataset.page) === currentPage);
+  });
+};
+
+const renderThumbnails = async () => {
+  thumbPane.innerHTML = '';
+  if (!currentPdf) return;
+
+  for (let i = 1; i <= currentPdf.numPages; i += 1) {
+    const page = await currentPdf.getPage(i);
+    const viewport = page.getViewport({ scale: 0.2 });
+    const thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = Math.floor(viewport.width);
+    thumbCanvas.height = Math.floor(viewport.height);
+
+    const ctx = thumbCanvas.getContext('2d', { alpha: false });
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const item = document.createElement('button');
+    item.className = 'thumb-item';
+    item.dataset.page = String(i);
+    item.append(thumbCanvas);
+
+    const label = document.createElement('span');
+    label.textContent = String(i);
+    item.append(label);
+
+    item.addEventListener('click', async () => {
+      await setPage(i);
+    });
+
+    thumbPane.append(item);
   }
 
-  updateZoomLabel();
+  updateActiveThumb();
 };
 
-zoomIn.addEventListener('click', async () => {
-  if (!currentPdf) return;
-  scale = Math.min(scale + 0.15, 3);
-  await renderPdfPages();
-});
+const loadPdf = async (file) => {
+  const bytes = await file.arrayBuffer();
+  currentPdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+  currentPage = 1;
+  currentScale = Number(zoomSelect.value) || 1;
 
-zoomOut.addEventListener('click', async () => {
-  if (!currentPdf) return;
-  scale = Math.max(scale - 0.15, 0.55);
-  await renderPdfPages();
-});
+  resetWorkspaces();
+  pdfReader.classList.remove('hidden');
+  welcome.classList.add('hidden');
 
-fitWidth.addEventListener('click', async () => {
-  if (!currentPdf) return;
-  const maxWidth = Math.max(680, pdfPages.clientWidth - 40);
-  const firstPage = await currentPdf.getPage(1);
-  const natural = firstPage.getViewport({ scale: 1 });
-  scale = maxWidth / natural.width;
-  await renderPdfPages();
-});
+  fileName.textContent = file.name;
+  pageCount.textContent = `of ${currentPdf.numPages}`;
+  setStatus(`PDF loaded: ${file.name}`);
+
+  await renderThumbnails();
+  await renderPage();
+};
 
 const parsePptxSlides = (arrayBuffer) => {
   const zip = unzipSync(new Uint8Array(arrayBuffer));
-  const slidePaths = Object.keys(zip)
+  const paths = Object.keys(zip)
     .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
     .sort((a, b) => Number(a.match(/slide(\d+)\.xml$/)?.[1] || 0) - Number(b.match(/slide(\d+)\.xml$/)?.[1] || 0));
 
-  return slidePaths.map((slidePath) => {
-    const xml = strFromU8(zip[slidePath]);
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'application/xml');
-
-    return [...doc.getElementsByTagName('a:t')]
-      .map((node) => node.textContent?.trim())
-      .filter(Boolean);
+  return paths.map((path) => {
+    const xml = strFromU8(zip[path]);
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    return [...doc.getElementsByTagName('a:t')].map((node) => node.textContent?.trim()).filter(Boolean);
   });
 };
 
-const renderPptx = async (file) => {
+const loadPptx = async (file) => {
   const slides = parsePptxSlides(await file.arrayBuffer());
 
-  resetView();
+  resetWorkspaces();
   pptWorkspace.classList.remove('hidden');
   welcome.classList.add('hidden');
+  fileName.textContent = file.name;
   setStatus(`PPTX loaded: ${file.name} • ${slides.length} slides`);
 
-  if (!slides.length) {
-    const empty = document.createElement('article');
-    empty.className = 'slide';
-    empty.textContent = 'No readable text was found in this PPTX file.';
-    pptWorkspace.append(empty);
-    return;
-  }
-
-  slides.forEach((texts, index) => {
-    const slideCard = document.createElement('article');
-    slideCard.className = 'slide';
+  slides.forEach((texts, idx) => {
+    const card = document.createElement('article');
+    card.className = 'slide';
 
     const title = document.createElement('h3');
-    title.textContent = `Slide ${index + 1}`;
-    slideCard.append(title);
+    title.textContent = `Slide ${idx + 1}`;
+    card.append(title);
 
     const list = document.createElement('ul');
-    if (!texts.length) {
-      const item = document.createElement('li');
-      item.textContent = '(No text on this slide)';
-      list.append(item);
-    } else {
-      texts.forEach((text) => {
-        const item = document.createElement('li');
-        item.textContent = text;
-        list.append(item);
-      });
-    }
+    (texts.length ? texts : ['(No text on this slide)']).forEach((text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.append(li);
+    });
 
-    slideCard.append(list);
-    pptWorkspace.append(slideCard);
+    card.append(list);
+    pptWorkspace.append(card);
   });
-};
-
-const renderPdf = async (file) => {
-  currentPdf = null;
-  scale = 1.15;
-
-  const bytes = await file.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: bytes }).promise;
-  currentPdf = doc;
-
-  resetView();
-  pdfWorkspace.classList.remove('hidden');
-  welcome.classList.add('hidden');
-  setStatus(`PDF loaded: ${file.name}`);
-  await renderPdfPages();
 };
 
 const handleFile = async (file) => {
   try {
     const name = file.name.toLowerCase();
+    if (name.endsWith('.pdf')) return await loadPdf(file);
+    if (name.endsWith('.pptx')) return await loadPptx(file);
 
-    if (name.endsWith('.pdf')) {
-      await renderPdf(file);
-      return;
-    }
-
-    if (name.endsWith('.pptx')) {
-      await renderPptx(file);
-      return;
-    }
-
-    resetView();
+    resetWorkspaces();
+    fileName.textContent = file.name;
     if (name.endsWith('.ppt')) {
-      setStatus('Legacy .ppt files cannot be parsed reliably in-browser. Convert to .pptx for full reading.', 'error');
+      setStatus('Legacy .ppt is not supported directly. Convert to .pptx for best results.', 'error');
     } else {
-      setStatus('Unsupported file type. Please upload .pdf, .pptx, or .ppt.', 'error');
+      setStatus('Unsupported file type. Use .pdf, .pptx, or .ppt.', 'error');
     }
   } catch (error) {
-    resetView();
-    setStatus(`Failed to render file: ${error.message}`, 'error');
+    resetWorkspaces();
+    setStatus(`Failed to load file: ${error.message}`, 'error');
   }
 };
 
@@ -211,8 +209,40 @@ fileInput.addEventListener('change', async (event) => {
   if (file) await handleFile(file);
 });
 
-document.addEventListener('dragover', (event) => event.preventDefault());
+pageNumber.addEventListener('change', async () => {
+  await setPage(Number(pageNumber.value || 1));
+});
 
+prevPage.addEventListener('click', async () => {
+  await setPage(currentPage - 1);
+});
+
+nextPage.addEventListener('click', async () => {
+  await setPage(currentPage + 1);
+});
+
+zoomSelect.addEventListener('change', async () => {
+  currentScale = Number(zoomSelect.value);
+  await renderPage();
+});
+
+zoomIn.addEventListener('click', async () => {
+  currentScale = Math.min(currentScale + 0.15, 3);
+  zoomSelect.value = String(Math.round(currentScale * 100) / 100);
+  await renderPage();
+});
+
+zoomOut.addEventListener('click', async () => {
+  currentScale = Math.max(currentScale - 0.15, 0.5);
+  zoomSelect.value = String(Math.round(currentScale * 100) / 100);
+  await renderPage();
+});
+
+toggleSidebar.addEventListener('click', () => {
+  thumbPane.classList.toggle('hidden');
+});
+
+document.addEventListener('dragover', (event) => event.preventDefault());
 document.addEventListener('drop', async (event) => {
   event.preventDefault();
   const [file] = event.dataTransfer.files;
