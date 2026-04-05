@@ -1,216 +1,55 @@
 :root {
-  --bg: #0b1020;
-  --bg2: #0f172a;
-  --panel: rgba(15, 23, 42, 0.72);
-  --panel-solid: rgba(15, 23, 42, 0.95);
-  --text: #e8eefb;
-  --muted: #aab7d6;
-  --accent: #78a8ff;
-  --border: rgba(120, 168, 255, 0.2);
-  --shadow: 0 25px 60px rgba(2, 8, 24, 0.45);
-  --pdf-filter: brightness(0.88) contrast(1.06) saturate(0.92);
+  --bg: #1f2026;
+  --panel: #2b2d34;
+  --panel-2: #32343d;
+  --panel-3: #20242e;
+  --text: #e5e7eb;
+  --muted: #aab0bb;
+  --accent: #90b4ff;
+  --border: #434754;
+  --pdf-filter: brightness(0.9) contrast(1.05);
 }
+body[data-theme='obsidian'] { --bg:#141414; --panel:#232323; --panel-2:#2c2c2c; --panel-3:#1b1b1b; --text:#f3f4f6; --muted:#b7bdc7; --accent:#6cc7ff; --border:#3a3a3a; --pdf-filter:brightness(0.88) contrast(1.06); }
+body[data-theme='nordic'] { --bg:#202631; --panel:#2b3545; --panel-2:#333f52; --panel-3:#222d3d; --text:#e8edf6; --muted:#b6c1d3; --accent:#8fb6d8; --border:#465468; --pdf-filter:brightness(0.9) contrast(1.04); }
+body[data-theme='mocha'] { --bg:#251d19; --panel:#342922; --panel-2:#3b3029; --panel-3:#2b221d; --text:#f6e8d8; --muted:#d7c4ad; --accent:#d9a36a; --border:#5b4a3e; --pdf-filter:sepia(0.2) brightness(0.9) contrast(1.03); }
 
-body[data-theme='obsidian'] {
-  --bg: #06070a;
-  --bg2: #0a0b0f;
-  --panel: rgba(9, 9, 12, 0.8);
-  --panel-solid: rgba(7, 7, 9, 0.96);
-  --text: #f4f6fc;
-  --muted: #b6bcc8;
-  --accent: #5cc8ff;
-  --border: rgba(92, 200, 255, 0.24);
-  --shadow: 0 25px 60px rgba(0, 0, 0, 0.58);
-  --pdf-filter: brightness(0.86) contrast(1.06) saturate(0.92);
-}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,sans-serif;height:100vh;overflow:hidden}
 
-body[data-theme='nordic'] {
-  --bg: #101622;
-  --bg2: #1a2230;
-  --panel: rgba(36, 49, 68, 0.75);
-  --panel-solid: rgba(31, 42, 57, 0.95);
-  --text: #eef3fb;
-  --muted: #c3ccdd;
-  --accent: #97bddc;
-  --border: rgba(151, 189, 220, 0.25);
-  --shadow: 0 25px 60px rgba(7, 12, 24, 0.42);
-  --pdf-filter: brightness(0.9) contrast(1.04) saturate(0.88);
-}
+.global-bar{height:58px;display:flex;justify-content:space-between;align-items:center;padding:0 14px;background:var(--panel);border-bottom:1px solid var(--border)}
+.left-global,.right-global{display:flex;align-items:center;gap:10px}
+#fileInput{display:none}
+.btn,.input,.icon-btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:8px;font-size:14px}
+.btn{padding:8px 12px;cursor:pointer;font-weight:600}
+.btn.accent{background:var(--accent);color:#111827;border:none}
+.input{padding:8px 10px}
+.meta{color:var(--muted);font-size:14px}
 
-body[data-theme='mocha'] {
-  --bg: #1a130f;
-  --bg2: #241a15;
-  --panel: rgba(45, 33, 24, 0.78);
-  --panel-solid: rgba(36, 27, 20, 0.95);
-  --text: #f6e8d8;
-  --muted: #d8c4ae;
-  --accent: #d4a066;
-  --border: rgba(212, 160, 102, 0.28);
-  --shadow: 0 25px 60px rgba(8, 4, 2, 0.5);
-  --pdf-filter: sepia(0.22) saturate(0.85) brightness(0.9) contrast(1.03);
-}
+.welcome{padding:24px}
+.welcome h1{margin:0 0 8px}
+.welcome p{margin:0;color:var(--muted)}
 
-* { box-sizing: border-box; }
+.status{margin:0 12px 10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted)}
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Inter, Segoe UI, Roboto, sans-serif;
-  color: var(--text);
-  background: radial-gradient(circle at 0% 0%, var(--bg2), var(--bg));
-}
+#pdfReader{height:calc(100vh - 58px);display:flex;flex-direction:column}
+.pdf-toolbar{height:52px;display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--panel);border-top:1px solid #1a1b20;border-bottom:1px solid var(--border)}
+.icon-btn{width:34px;height:34px;display:grid;place-items:center;cursor:pointer}
+.page-input{width:52px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);color:var(--text);text-align:center}
+.zoom-select{width:120px;height:34px}
 
-.bg-blur {
-  position: fixed;
-  inset: -15% -10% auto;
-  height: 350px;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent) 38%, transparent) 0%, transparent 72%);
-  pointer-events: none;
-  z-index: -1;
-}
+.pdf-stage{display:flex;flex:1;min-height:0;background:var(--panel-3)}
+.thumb-pane{width:220px;border-right:1px solid var(--border);overflow:auto;padding:10px;background:#1b1e27}
+.thumb-item{padding:8px;border:1px solid transparent;border-radius:8px;margin-bottom:10px;cursor:pointer}
+.thumb-item.active{border-color:var(--accent);background:rgba(255,255,255,.03)}
+.thumb-item canvas{width:100%;height:auto;display:block;border-radius:6px;filter:var(--pdf-filter)}
+.thumb-item span{display:block;text-align:center;margin-top:6px;color:var(--muted);font-size:12px}
 
-.app-shell {
-  max-width: 1200px;
-  margin: 20px auto 0;
-  padding: 16px 20px;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
+.page-pane{flex:1;overflow:auto;padding:18px;background:#1a1d26}
+.page-canvas-wrap{display:flex;justify-content:center;min-height:100%}
+#pageCanvas{max-width:100%;height:auto;border-radius:8px;box-shadow:0 20px 40px rgba(0,0,0,.35);filter:var(--pdf-filter);background:#111}
 
-.brand-wrap { display: flex; align-items: center; gap: 14px; }
-.logo {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-}
-.brand-wrap h1 { margin: 0; font-size: 29px; }
-.brand-wrap p { margin: 3px 0 0; color: var(--muted); font-size: 14px; }
-
-.top-actions { display: flex; gap: 10px; align-items: center; }
-#fileInput { display: none; }
-
-.input,
-.btn {
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--panel-solid);
-  color: var(--text);
-  font-size: 14px;
-  padding: 10px 14px;
-}
-
-.btn { font-weight: 600; cursor: pointer; }
-.btn.primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 68%, #fff 32%), var(--accent));
-  color: #08182f;
-  border: none;
-}
-
-.btn.ghost {
-  min-width: 44px;
-  text-align: center;
-}
-
-.layout {
-  max-width: 1200px;
-  margin: 16px auto 40px;
-  padding: 0 4px;
-}
-
-.panel {
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow);
-}
-
-.welcome { padding: 28px; }
-.welcome h2 { margin: 0 0 10px; font-size: 28px; }
-.welcome p { margin: 0; color: var(--muted); line-height: 1.6; }
-
-.feature-list {
-  margin-top: 18px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.feature-list span {
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 7px 12px;
-  color: var(--muted);
-}
-
-.status {
-  margin-top: 12px;
-  padding: 13px 16px;
-  color: var(--muted);
-}
-
-.toolbar {
-  margin-top: 12px;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px;
-}
-
-.left-tools, .right-tools { display: flex; align-items: center; gap: 8px; }
-.pill {
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  padding: 8px 12px;
-  font-size: 13px;
-  color: var(--muted);
-  background: var(--panel-solid);
-}
-
-.pdf-pages {
-  margin-top: 12px;
-  display: grid;
-  gap: 18px;
-}
-
-.pdf-page {
-  border-radius: 16px;
-  background: var(--panel-solid);
-  padding: 14px;
-  overflow: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-}
-
-.pdf-page canvas {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  filter: var(--pdf-filter);
-  border-radius: 8px;
-  image-rendering: auto;
-  backface-visibility: hidden;
-}
-
-.slide {
-  margin-top: 12px;
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-}
-
-.slide h3 { margin: 0 0 10px; }
-.slide ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.5; }
-
-.hidden { display: none !important; }
+#pptWorkspace{height:calc(100vh - 58px);overflow:auto;padding:16px}
+.slide{margin-bottom:12px;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+.slide h3{margin:0 0 8px}
+.slide ul{margin:0;padding-left:18px;color:var(--muted)}
+.hidden{display:none!important}
